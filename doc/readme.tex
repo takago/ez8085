@@ -1,0 +1,121 @@
+ % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % 
+ %  
+ %                       Copyright 2009 Daisuke TAKAGO
+ %                   takago@neptune.kanazawa-it.ac.jp
+ %
+ % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % %
+ %
+ %  This file is part of  "EZ8085"
+ %
+ %  EZ8085 is free software: you can redistribute it and/or modify
+ %  it under the terms of the GNU General Public License as published by
+ %  the Free Software Foundation, either version 3 of the License, or
+ %  (at your option) any later version.
+ %
+ %  EZ8085 program is distributed in the hope that it will be useful,
+ %  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ %  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ %  GNU General Public License for more details.
+ % 
+ %  You should have received a copy of the GNU General Public License
+ %  along with EZ8085.  If not, see <http://www.gnu.org/licenses/>.
+ %
+ % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % %
+
+\documentclass{jsarticle}
+\pagestyle{empty}
+\usepackage{okumacro,url}
+%%%%%%%%%%%%%%%%%%%%%%%%
+\twocolumn
+\oddsidemargin=-0.4truein
+\topmargin=-0.3truein
+\headheight=0truein
+\headsep=0truein
+\textwidth=7.2truein
+\textheight=10.6truein
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{document}
+\begin{screen}
+{\Huge\bf {\sf EZ8085取扱い説明書}}
+{\footnotesize \url{http://pegasus.infor.kanazawa-it.ac.jp/~takago/ez8085}}
+\end{screen}
+\section{EZ8085とは}
+EZ8085はUNIXシステム上で動作する8085エミュレータ・デバッガです
+\footnote{割り込みやIOポート制御の命令は動作しません．}．アセンブル
+\footnote{簡易アセンブラの為，アセンブルエラーは表示しません．}，逆アセンブル，レジスタ・メモリの操作などの機能を備えています．改造・再配布は自由ですがGPLに従ってください．
+\subsection{EZ8085のビルド，起動と終了}
+\noindent
+\verb| $ tar xvfz ez8085-0.15.tar.gz| \return \dotfill 解凍\\
+\verb| $ cd ez8085-0.15|\return \dotfill ディレクトリ移動\\
+\verb| $ make|\return \dotfill ビルド\\
+\verb| $ ./ez8085|\return \dotfill EZ8085起動\\
+~~~EZ8085のコンソールで，\verb|exit|\return と打つと終了します．
+\section{各機能の使い方}
+\subsection{簡易アセンブラを使う}
+\verb|asm|\return \footnote{\verb|asm ファイル名|\return で，指定ファイルをアセ
+ンブルできます．}でアセンブルモードに移り，\return でアセンブルモー
+ドを抜けます．アセンブルモードでは1行毎にマシンコードに変換し，そのまま8085のメモリにロードします．
+\begin{itemize}
+\item {\bf セミコロン;}から行末まではコメントと見做されます．
+\item 利用可能なディレクティブ\\
+\verb|ORG 8000h|\dotfill ロケーションカウンタの変更\\
+\verb|DB 12h,45h,DEh,DEh| \dotfill バイトデータ格納\\
+\verb|DW 1234h,ABCDh| \dotfill ワードデータ格納\\
+\verb|DS "Alpha",'X'| \dotfill 文字列格納\\
+\item   \verb|MVI A,30h| の様に， オペコード と オペランドの間にはスペー
+	スを1個だけ空けてください．また，{\bf コンマ,}の前後にはスペースを空けないで下さい．
+\item ラベルを使うことができます．使用例）\\
+\verb|LOOP:  LDA 0B000h|\\
+\verb|       JMP LOOP|
+\begin{itemize}
+\item 未定義ラベルを使った場合，その
+      部分はアセンブルモードから抜ける際に，絶対番地に置き換わります（最
+      後に表示される{\bf シンボルテーブル}などで確認して下さい）．
+\item 3バイト命令のオペランドでは，頭に0をつけて数値とラベルと区別して下さい．
+\end{itemize}
+ \end{itemize}
+\subsection{逆アセンブラを使う}
+\verb|disas 8000h 10|\return とすると8000h番地から，10命令分を逆アセンブルします．
+
+\subsection{レジスタを操作する}
+\begin{itemize}
+\item レジスタ値の変更は以下の様にします．\\
+   \verb|PC=4000h|\return\dotfill プログラムカウンタの変更\\
+   \verb|A=F4h|\return\dotfill アキュムレータの変更\\
+   \verb|c=1|\return \dotfill キャリフラグのセット\\   
+   \verb|F=A2h|\return\dotfill フラグレジスタをまとめて変更\\
+   \verb|BC=ABCDh|\return\dotfill ペアレジスタにセット\\
+   \verb|C=13h|\return\dotfill Cレジスタの変更
+\item \verb|reg|\return \dotfill 全レジスタを表示
+\item \verb|reset|\return \dotfill 全レジスタをリセット
+\end{itemize}
+\subsection{メモリを操作する}
+\begin{itemize}
+\item \verb|[8000h]|\return \dotfill 8000h番地の内容を表示
+\item \verb|[8000h]=d2h|\return \dotfill 8000h番地にd2を格納
+\item \verb|dump 4000h 10h|\return \\\dotfill 4000h番地から16バイトHEXダン
+      プ
+\item \verb|adump 4000h 10h|\return \\\dotfill 4000h番地から16バイトASCIIダンプ
+\item \verb|load 8000h 12h,34h,deh|\return \\\dotfill 8000h番地から連続的にデータを格納
+\item \verb|hexload 8000h|\return \\
+\dotfill 8000h番地から連続的に16進系列を格納
+\item \verb|fill 4000h 10 FFh|\return\\ \dotfill 4000h番地から16バイト分を
+      FFhで埋める
+\end{itemize}
+\subsection{プログラムを実行する}
+\begin{itemize}
+\item \verb|step|\return または単に\return \dotfill {\bf シングルステップ実行}
+\item
+\verb|cont|\return \dotfill {\bf 連続実行}
+\begin{itemize}
+\item 無限ループに入っても， \keytop{Ctrl}+\keytop{c}で中断可能
+\item \verb|HLT|を実行するか，{\gt テンポラリブレー
+     クポイント}で連続実行は中断されます．例えば，\verb|brk 4000h|\return
+      とすると，4000h番地にブレークポイントを設定すること
+      ができます．ただし，一度停止するとそのポイントは消滅します．
+\end{itemize}
+\item  \verb|HLT|命令や未知のマシンコードを実行するとCPUが停止します．\verb|resume|\return で再開します．
+\end{itemize}
+\subsection{簡易ヘルプを表示する}
+\verb|help|\return で簡単な（お粗末な）ヘルプを表示します．
+\end{document}
